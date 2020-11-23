@@ -118,3 +118,7 @@ glyphs.draw(32, (ctx, x, y, w, h) => ctx.fillText('-', x, y) );
 
 canvas.updateGlyphs(glyphs.node);
 ```
+
+## Credit
+
+This project started as an attempt to modify [Fastiles](https://github.com/ondras/fastiles), but @ondras and I figured out that we had different goals for the WebGL Renderer.  Based on that I created this library.  However, the hard work in the code is all done by @ondras - by that I mean setting up the initial WebGl pipeline and getting it to work.  I changed some things, but the heart of it is still the same as Fastiles.

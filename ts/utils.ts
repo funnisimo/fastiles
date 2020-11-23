@@ -1,3 +1,5 @@
+// Copy of: https://github.com/ondras/fastiles/blob/master/ts/utils.ts (v2.1.0)
+
 type GL = WebGL2RenderingContext;
 
 export const QUAD = [

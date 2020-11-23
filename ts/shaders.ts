@@ -1,3 +1,5 @@
+// Based on: https://github.com/ondras/fastiles/blob/master/ts/shaders.ts (v2.1.0)
+
 export const VS = `
 #version 300 es
 in uvec2 position;

@@ -56,6 +56,7 @@ export default class Scene {
   draw(x: number, y: number, glyph: number, fg: number, bg: number) {
       let index = y * this._tileCount[0] + x;
       index *= VERTICES_PER_TILE;
+			glyph = glyph & 0xFF;
 			bg = bg & 0xFFF;
 			fg = fg & 0xFFF;
       const style = (glyph << 24) + (bg << 12) + fg;

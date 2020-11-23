@@ -2,7 +2,7 @@ declare type CTX = CanvasRenderingContext2D;
 declare type DrawFunction = (ctx: CTX, x: number, y: number, width: number, height: number) => void;
 declare type DrawType = string | DrawFunction;
 declare type CustomGlyphs = Record<number, DrawType>;
-interface GlyphOptions {
+export interface Options {
     font: string;
     fontSize: number;
     size: number;
@@ -22,7 +22,7 @@ export default class Glyphs {
     tileWidth: number;
     tileHeight: number;
     private _map;
-    constructor(opts?: Partial<GlyphOptions>);
+    constructor(opts?: Partial<Options>);
     private _configure;
     draw(n: number, ch: DrawType): void;
     _initGlyphs(glyphs?: Record<number, DrawType>, basicOnly?: boolean): void;

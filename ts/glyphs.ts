@@ -5,7 +5,7 @@ type DrawFunction = (ctx: CTX, x: number, y: number, width: number, height: numb
 type DrawType = string|DrawFunction;
 type CustomGlyphs = Record<number, DrawType>;
 
-interface GlyphOptions {
+export interface Options {
   font: string;
   fontSize: number;
   size: number;
@@ -27,15 +27,15 @@ export default class Glyphs {
   public tileHeight: number=16;
   private _map: Record<string,number>={};
   
-	constructor(opts: Partial<GlyphOptions>={}) {
+	constructor(opts: Partial<Options>={}) {
 		opts.font = opts.font || 'monospace';
     opts.basic = opts.basic || false;
     
-		this._configure(opts as GlyphOptions);
+		this._configure(opts as Options);
     this._initGlyphs(opts.glyphs, opts.basic);
   }
   
-  private _configure(opts: GlyphOptions) {
+  private _configure(opts: Options) {
 		this.node = opts.node || document.createElement('canvas');
     this.tileWidth = opts.tileWidth || opts.width || this.tileWidth;
     this.tileHeight = opts.tileHeight || opts.height || this.tileHeight;

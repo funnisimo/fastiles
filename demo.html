@@ -9,14 +9,14 @@
 window.addEventListener("error", e => console.warn(e));
 window.addEventListener("unhandledrejection ", e => console.warn(e));
 
-import { Scene, Glyphs } from "./js/fastiles.js";
+import { Canvas, Glyphs } from "./js/fastiles.js";
 
 
 async function init() {
 
 	const glyphs = new Glyphs({ tileSize: 12, fontSize: 14 });
 
-	let s = new Scene({
+	let s = new Canvas({
 		width: 50,
 		height: 38,
 		glyphs: glyphs.node,
@@ -25,7 +25,7 @@ async function init() {
 	document.body.appendChild(s.node);
 
 	window.s = s;
-	window.Scene = Scene;
+	window.Canvas = Canvas;
 
 	function rnd(n) { return Math.floor(Math.random() * n); }
 

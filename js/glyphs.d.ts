@@ -6,28 +6,32 @@ export interface Options {
     font: string;
     fontSize: number;
     size: number;
-    width: number;
     tileWidth: number;
-    height: number;
+    width: number;
     tileHeight: number;
+    height: number;
     glyphs?: CustomGlyphs;
+    basicOnly: boolean;
     basic: boolean;
-    node?: HTMLCanvasElement;
 }
 export default class Glyphs {
     node: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-    width: number;
-    height: number;
-    tileWidth: number;
-    tileHeight: number;
+    private _ctx;
+    private _tileWidth;
+    private _tileHeight;
+    needsUpdate: boolean;
     private _map;
+    static fromImage(src: string | HTMLImageElement): Glyphs;
     constructor(opts?: Partial<Options>);
+    get width(): number;
+    get height(): number;
+    get tileWidth(): number;
+    get tileHeight(): number;
+    get pxWidth(): number;
+    get pxHeight(): number;
+    toIndex(ch: string): number;
     private _configure;
     draw(n: number, ch: DrawType): void;
     _initGlyphs(glyphs?: Record<number, DrawType>, basicOnly?: boolean): void;
-    toIndex(ch: string): number;
-    get pxWidth(): number;
-    get pxHeight(): number;
 }
 export {};

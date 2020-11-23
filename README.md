@@ -5,10 +5,11 @@ Library for rendering colorized bitmap fonts. Very fast, suitable for applicatio
 ## Features
 
   - Supports up to 256 glyphs from a 16x16 image
+  - Allows changing glyphs
   - Updates are batched via `requestAnimationFrame`
   - Uses 4096 colors
   - Written in TypeScript
-  - Can generate glyph images from font
+  - Can generate glyph images from a font
 
 ## Speed
 
@@ -33,7 +34,7 @@ These color integers are used for both the foreground and background drawing col
 
 ## Glyphs
 
-Fastiles works by using a bitmap font image that it draws from.  The image *MUST* be a 16x16 layout for the glyphs.  The size of the glyphs (or characters) inferred by the Fastiles.Canvas at construction time.
+Fastiles works by using a bitmap font image that it draws from.  The image *MUST* be a 16x16 layout for the glyphs.  The size of the glyphs is inferred by the Fastiles.Canvas at construction time.
 
 ```js
 const glyphs = new Image();
@@ -43,7 +44,7 @@ await glyphs.decode();
 const canvas = new Fastiles.Canvas({ glyphs, width: 50, height: 38 });
 document.body.appendChild(canvas.node);
 
-canvas.draw(0, 0, 97, 0xF00, 0xFFF); // red 'A' on white background.
+canvas.draw(0, 0, 97, 0xF00, 0xFFF); // usually a red 'A' on white background.
 ```
 
 ## Canvas

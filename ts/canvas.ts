@@ -6,11 +6,14 @@ import Glyphs from './glyphs.js';
 type GL = WebGL2RenderingContext;
 const VERTICES_PER_TILE = 6;
 
-interface Options {
+export interface Options {
 	width: number;
 	height: number;
-	glyphs?: TexImageSource;
+	tileWidth?: number;
+	tileHeight?: number;
+	glyphs?: HTMLImageElement|Glyphs|string;
 	node?: HTMLCanvasElement|string;
+	render?: boolean;
 }
 
 export default class Canvas {
@@ -24,16 +27,25 @@ export default class Canvas {
 	private _attribs: Record<string, number> = {};
 	private _uniforms: Record<string, WebGLUniformLocation> = {};
 	private _renderRequested: boolean = false;
-	private _glyphs!: WebGLTexture;
+	private _texture!: WebGLTexture;
+	private _glyphs!: Glyphs;
+	private _autoRender: boolean=true;
+	
 	private _width:number=50;
 	private _height:number=25;
 	private _tileWidth:number=16;
 	private _tileHeight:number=16;
 
-  constructor(options: Options|HTMLCanvasElement) {
+  constructor(options: Options|HTMLCanvasElement|string) {
 		let opts = options as Options;
+		if (typeof options === 'string') {
+			const el = document.getElementById(options);
+			if (!el) throw new Error('Failed to find canvas with id=' + options);
+			if (!(el instanceof HTMLCanvasElement)) throw new Error('id must be a canvas element.');
+			options = el;
+		}
 		if (options instanceof HTMLCanvasElement) {
-			opts = { node: options } as Options;
+			opts = { node: options, width: this._width, height: this._height };
 		}
     this._gl = this._initGL(opts.node);
     this._configure(opts);
@@ -44,16 +56,21 @@ export default class Canvas {
 	get height() { return this._height; }
 	get tileWidth() { return this._tileWidth; }
 	get tileHeight() { return this._tileHeight; }
-	
+	get pxWidth() { return this.node.width; }
+	get pxHeight() { return this.node.height; }
+		
   private _configure(options: Options) {
 			this._width = options.width || this._width;
 			this._height = options.height || this._height;
+			this._tileWidth = options.tileWidth || this._tileWidth;
+			this._tileHeight = options.tileHeight || this._tileHeight;
+			this._autoRender = (options.render !== false);
+
 			let glyphs = options.glyphs;
 			if (!glyphs) {
-				const glyphObj = new Glyphs({ tileWidth: this._tileWidth, tileHeight: this._tileHeight });	// use defaults
-				glyphs = glyphObj.node;
+				glyphs = new Glyphs({ tileWidth: this._tileWidth, tileHeight: this._tileHeight });	// use defaults
 			}
-			this.updateGlyphs(glyphs);
+			this.glyphs = glyphs;
   }
 
 	resize(width: number, height: number) {
@@ -73,16 +90,26 @@ export default class Canvas {
 		this._createData();
 	}
 
-	updateGlyphs(glyphs: TexImageSource) {
+	get glyphs() { return this._glyphs; }
+	set glyphs(glyphs: Glyphs|HTMLImageElement|string) {
 		const gl = this._gl;
 		const uniforms = this._uniforms;
 
-		this._tileWidth = glyphs.width / 16;
-		this._tileHeight = glyphs.height / 16;
-		this.resize(this._width, this._height);
+		if (!(glyphs instanceof Glyphs)) {
+			glyphs = Glyphs.fromImage(glyphs);
+		}
 
-		gl.uniform2uiv(uniforms["tileSize"], [this._tileWidth, this._tileHeight]);
-		this._uploadGlyphs(glyphs);
+		if (glyphs === this._glyphs && !glyphs.needsUpdate) return;
+
+		if (glyphs !== this._glyphs) {
+		  this._glyphs = glyphs;
+			this._tileWidth = glyphs.tileWidth;
+			this._tileHeight = glyphs.tileHeight;
+			this.resize(this._width, this._height);
+			gl.uniform2uiv(uniforms["tileSize"], [this._tileWidth, this._tileHeight]);
+		}
+
+		this._uploadGlyphs();
 	}
 
   draw(x: number, y: number, glyph: number, fg: number, bg: number) {
@@ -123,7 +150,7 @@ export default class Canvas {
           this._uniforms[info.name] = gl.getUniformLocation(p, info.name) as WebGLUniformLocation;
       }
       gl.uniform1i(this._uniforms["font"], 0);
-      this._glyphs = createTexture(gl);
+      this._texture = createTexture(gl);
       return gl;
   }
 	
@@ -148,7 +175,7 @@ export default class Canvas {
   }
 	
   private _requestRender() {
-      if (this._renderRequested) {
+      if (this._renderRequested || !this._autoRender) {
           return;
       }
       this._renderRequested = true;
@@ -157,18 +184,24 @@ export default class Canvas {
 	
   private _render() {
       const gl = this._gl;
+			
+			if (this._glyphs.needsUpdate) {	// auto keep glyphs up to date
+				this._uploadGlyphs();
+			}
+			
       this._renderRequested = false;
       gl.bindBuffer(gl.ARRAY_BUFFER, this._buffers.style!);
       gl.bufferData(gl.ARRAY_BUFFER, this._data, gl.DYNAMIC_DRAW);
       gl.drawArrays(gl.TRIANGLES, 0, this._width * this._height * VERTICES_PER_TILE);
   }
 	
-  private _uploadGlyphs(pixels: TexImageSource) {
+  private _uploadGlyphs() {
       const gl = this._gl;
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, this._glyphs);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      gl.bindTexture(gl.TEXTURE_2D, this._texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._glyphs.node);
       this._requestRender();
+			this._glyphs.needsUpdate = false;
   }
 }
 

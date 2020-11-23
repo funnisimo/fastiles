@@ -85,48 +85,73 @@ void main() {
 
     class Glyphs {
         constructor(opts = {}) {
-            this.width = 16;
-            this.height = 16;
-            this.tileWidth = 12;
-            this.tileHeight = 16;
+            this._tileWidth = 12;
+            this._tileHeight = 16;
+            this.needsUpdate = true;
             this._map = {};
             opts.font = opts.font || 'monospace';
-            opts.basic = opts.basic || false;
+            opts.basicOnly = opts.basicOnly || opts.basic || false;
             this._configure(opts);
-            this._initGlyphs(opts.glyphs, opts.basic);
+            this._initGlyphs(opts.glyphs, opts.basicOnly);
         }
+        static fromImage(src) {
+            if (typeof src === 'string') {
+                if (src.startsWith('data:'))
+                    throw new Error('Glyph: Cannot load image data string directly, see examples.');
+                const el = document.getElementById(src);
+                if (!el)
+                    throw new Error('Glyph: Failed to find image element with id:' + src);
+                src = el;
+            }
+            const glyph = new this();
+            glyph.node.width = src.width;
+            glyph.node.height = src.height;
+            glyph._tileWidth = src.width / 16;
+            glyph._tileHeight = src.height / 16;
+            glyph._ctx.drawImage(src, 0, 0);
+            glyph.needsUpdate = true;
+            return glyph;
+        }
+        get width() { return 16; }
+        get height() { return 16; }
+        get tileWidth() { return this._tileWidth; }
+        get tileHeight() { return this._tileHeight; }
+        get pxWidth() { return this.node.width; }
+        get pxHeight() { return this.node.height; }
+        toIndex(ch) { return this._map[ch] || -1; }
         _configure(opts) {
-            this.node = opts.node || document.createElement('canvas');
-            this.tileWidth = opts.tileWidth || opts.width || this.tileWidth;
-            this.tileHeight = opts.tileHeight || opts.height || this.tileHeight;
+            this.node = document.createElement('canvas');
+            this._ctx = this.node.getContext('2d');
+            this._tileWidth = opts.tileWidth || opts.width || this.tileWidth;
+            this._tileHeight = opts.tileHeight || opts.height || this.tileHeight;
             this.node.width = this.width * this.tileWidth;
             this.node.height = this.height * this.tileHeight;
-            this.ctx = this.node.getContext('2d');
-            this.ctx.fillStyle = 'black';
-            this.ctx.fillRect(0, 0, this.pxWidth, this.pxHeight);
+            this._ctx.fillStyle = 'black';
+            this._ctx.fillRect(0, 0, this.pxWidth, this.pxHeight);
             const size = opts.fontSize || opts.size || Math.max(this.tileWidth, this.tileHeight);
-            this.ctx.font = '' + size + 'px ' + opts.font;
-            this.ctx.textAlign = 'center';
-            this.ctx.textBaseline = 'middle';
-            this.ctx.fillStyle = 'white';
+            this._ctx.font = '' + size + 'px ' + opts.font;
+            this._ctx.textAlign = 'center';
+            this._ctx.textBaseline = 'middle';
+            this._ctx.fillStyle = 'white';
         }
         draw(n, ch) {
             const x = (n % this.width) * this.tileWidth;
             const y = Math.floor(n / this.width) * this.tileHeight;
             const cx = x + Math.floor(this.tileWidth / 2);
             const cy = y + Math.floor(this.tileHeight / 2);
-            this.ctx.save(); // save the context
-            this.ctx.beginPath();
-            this.ctx.rect(x, y, this.tileWidth, this.tileHeight);
-            this.ctx.clip();
+            this._ctx.save();
+            this._ctx.beginPath();
+            this._ctx.rect(x, y, this.tileWidth, this.tileHeight);
+            this._ctx.clip();
             if (typeof ch === 'function') {
-                ch(this.ctx, x, y, this.tileWidth, this.tileHeight);
+                ch(this._ctx, x, y, this.tileWidth, this.tileHeight);
             }
             else {
                 this._map[ch] = n;
-                this.ctx.fillText(ch, cx, cy);
+                this._ctx.fillText(ch, cx, cy);
             }
-            this.ctx.restore(); // restore the context
+            this._ctx.restore();
+            this.needsUpdate = true;
         }
         _initGlyphs(glyphs = {}, basicOnly = false) {
             for (let i = 32; i < 127; ++i) {
@@ -171,9 +196,6 @@ void main() {
                 });
             }
         }
-        toIndex(ch) { return this._map[ch] || -1; }
-        get pxWidth() { return this.node.width; }
-        get pxHeight() { return this.node.height; }
     }
 
     const VERTICES_PER_TILE = 6;
@@ -184,13 +206,22 @@ void main() {
             this._attribs = {};
             this._uniforms = {};
             this._renderRequested = false;
+            this._autoRender = true;
             this._width = 50;
             this._height = 25;
             this._tileWidth = 16;
             this._tileHeight = 16;
             let opts = options;
+            if (typeof options === 'string') {
+                const el = document.getElementById(options);
+                if (!el)
+                    throw new Error('Failed to find canvas with id=' + options);
+                if (!(el instanceof HTMLCanvasElement))
+                    throw new Error('id must be a canvas element.');
+                options = el;
+            }
             if (options instanceof HTMLCanvasElement) {
-                opts = { node: options };
+                opts = { node: options, width: this._width, height: this._height };
             }
             this._gl = this._initGL(opts.node);
             this._configure(opts);
@@ -200,15 +231,19 @@ void main() {
         get height() { return this._height; }
         get tileWidth() { return this._tileWidth; }
         get tileHeight() { return this._tileHeight; }
+        get pxWidth() { return this.node.width; }
+        get pxHeight() { return this.node.height; }
         _configure(options) {
             this._width = options.width || this._width;
             this._height = options.height || this._height;
+            this._tileWidth = options.tileWidth || this._tileWidth;
+            this._tileHeight = options.tileHeight || this._tileHeight;
+            this._autoRender = (options.render !== false);
             let glyphs = options.glyphs;
             if (!glyphs) {
-                const glyphObj = new Glyphs({ tileWidth: this._tileWidth, tileHeight: this._tileHeight }); // use defaults
-                glyphs = glyphObj.node;
+                glyphs = new Glyphs({ tileWidth: this._tileWidth, tileHeight: this._tileHeight }); // use defaults
             }
-            this.updateGlyphs(glyphs);
+            this.glyphs = glyphs;
         }
         resize(width, height) {
             this._width = width;
@@ -223,14 +258,23 @@ void main() {
             this._createGeometry();
             this._createData();
         }
-        updateGlyphs(glyphs) {
+        get glyphs() { return this._glyphs; }
+        set glyphs(glyphs) {
             const gl = this._gl;
             const uniforms = this._uniforms;
-            this._tileWidth = glyphs.width / 16;
-            this._tileHeight = glyphs.height / 16;
-            this.resize(this._width, this._height);
-            gl.uniform2uiv(uniforms["tileSize"], [this._tileWidth, this._tileHeight]);
-            this._uploadGlyphs(glyphs);
+            if (!(glyphs instanceof Glyphs)) {
+                glyphs = Glyphs.fromImage(glyphs);
+            }
+            if (glyphs === this._glyphs && !glyphs.needsUpdate)
+                return;
+            if (glyphs !== this._glyphs) {
+                this._glyphs = glyphs;
+                this._tileWidth = glyphs.tileWidth;
+                this._tileHeight = glyphs.tileHeight;
+                this.resize(this._width, this._height);
+                gl.uniform2uiv(uniforms["tileSize"], [this._tileWidth, this._tileHeight]);
+            }
+            this._uploadGlyphs();
         }
         draw(x, y, glyph, fg, bg) {
             let index = y * this._width + x;
@@ -268,7 +312,7 @@ void main() {
                 this._uniforms[info.name] = gl.getUniformLocation(p, info.name);
             }
             gl.uniform1i(this._uniforms["font"], 0);
-            this._glyphs = createTexture(gl);
+            this._texture = createTexture(gl);
             return gl;
         }
         _createGeometry() {
@@ -290,7 +334,7 @@ void main() {
             Object.assign(this._buffers, { style });
         }
         _requestRender() {
-            if (this._renderRequested) {
+            if (this._renderRequested || !this._autoRender) {
                 return;
             }
             this._renderRequested = true;
@@ -298,17 +342,21 @@ void main() {
         }
         _render() {
             const gl = this._gl;
+            if (this._glyphs.needsUpdate) { // auto keep glyphs up to date
+                this._uploadGlyphs();
+            }
             this._renderRequested = false;
             gl.bindBuffer(gl.ARRAY_BUFFER, this._buffers.style);
             gl.bufferData(gl.ARRAY_BUFFER, this._data, gl.DYNAMIC_DRAW);
             gl.drawArrays(gl.TRIANGLES, 0, this._width * this._height * VERTICES_PER_TILE);
         }
-        _uploadGlyphs(pixels) {
+        _uploadGlyphs() {
             const gl = this._gl;
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this._glyphs);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+            gl.bindTexture(gl.TEXTURE_2D, this._texture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._glyphs.node);
             this._requestRender();
+            this._glyphs.needsUpdate = false;
         }
     }
     function createGeometry(gl, attribs, width, height) {

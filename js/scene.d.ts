@@ -1,7 +1,6 @@
-declare type Vec2 = [number, number];
 export interface Options {
-    tileCount: Vec2;
-    tileSize: Vec2;
+    width: number;
+    height: number;
     glyphs: TexImageSource;
     node?: HTMLCanvasElement;
 }
@@ -12,17 +11,21 @@ export default class Scene {
     private _attribs;
     private _uniforms;
     private _drawRequested;
-    private _tileCount;
     private _glyphs;
+    width: number;
+    height: number;
+    tileWidth: number;
+    tileHeight: number;
     constructor(options: Options);
     get node(): HTMLCanvasElement | OffscreenCanvas;
-    configure(options: Options): void;
+    private _configure;
+    resize(width: number, height: number): void;
+    updateGlyphs(glyphs: TexImageSource): void;
     draw(x: number, y: number, glyph: number, fg: number, bg: number): void;
     _initGL(node?: HTMLCanvasElement): WebGL2RenderingContext;
-    _createGeometry(size: Vec2): void;
-    _createData(tileCount: number): void;
+    _createGeometry(): void;
+    _createData(): void;
     _requestDraw(): void;
     _draw(): void;
     _uploadGlyphs(pixels: TexImageSource): void;
 }
-export {};

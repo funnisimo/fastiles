@@ -8,33 +8,43 @@ export default class Scene {
         this._attribs = {};
         this._uniforms = {};
         this._drawRequested = false;
-        this._tileCount = [0, 0];
+        this.width = 0;
+        this.height = 0;
+        this.tileWidth = 0;
+        this.tileHeight = 0;
         this._gl = this._initGL(options.node);
-        this.configure(options);
+        this._configure(options);
     }
     get node() { return this._gl.canvas; }
-    configure(options) {
+    _configure(options) {
+        this.width = options.width;
+        this.height = options.height;
+        this.updateGlyphs(options.glyphs);
+    }
+    resize(width, height) {
+        this.width = width;
+        this.height = height;
+        const node = this.node;
+        node.width = this.width * this.tileWidth;
+        node.height = this.height * this.tileWidth;
         const gl = this._gl;
         const uniforms = this._uniforms;
-        if (options.tileCount || options.tileSize) { // resize
-            const node = this.node;
-            const tileSize = options.tileSize || [node.width / this._tileCount[0], node.height / this._tileCount[1]];
-            const tileCount = options.tileCount || this._tileCount;
-            node.width = tileCount[0] * tileSize[0];
-            node.height = tileCount[1] * tileSize[1];
-            gl.viewport(0, 0, node.width, node.height);
-            gl.uniform2ui(uniforms["viewportSize"], node.width, node.height);
-        }
-        if (options.tileCount) { // re-create data buffers
-            this._tileCount = options.tileCount;
-            this._createGeometry(this._tileCount);
-            this._createData(this._tileCount[0] * this._tileCount[1]);
-        }
-        options.tileSize && gl.uniform2uiv(uniforms["tileSize"], options.tileSize);
-        options.glyphs && this._uploadGlyphs(options.glyphs);
+        gl.viewport(0, 0, node.width, node.height);
+        gl.uniform2ui(uniforms["viewportSize"], node.width, node.height);
+        this._createGeometry();
+        this._createData();
+    }
+    updateGlyphs(glyphs) {
+        const gl = this._gl;
+        const uniforms = this._uniforms;
+        this.tileWidth = glyphs.width / 16;
+        this.tileHeight = glyphs.height / 16;
+        this.resize(this.width, this.height);
+        gl.uniform2uiv(uniforms["tileSize"], [this.tileWidth, this.tileHeight]);
+        this._uploadGlyphs(glyphs);
     }
     draw(x, y, glyph, fg, bg) {
-        let index = y * this._tileCount[0] + x;
+        let index = y * this.width + x;
         index *= VERTICES_PER_TILE;
         glyph = glyph & 0xFF;
         bg = bg & 0xFFF;
@@ -67,16 +77,17 @@ export default class Scene {
         this._glyphs = createTexture(gl);
         return gl;
     }
-    _createGeometry(size) {
+    _createGeometry() {
         const gl = this._gl;
         this._buffers.position && gl.deleteBuffer(this._buffers.position);
         this._buffers.uv && gl.deleteBuffer(this._buffers.uv);
-        let buffers = createGeometry(gl, this._attribs, size);
+        let buffers = createGeometry(gl, this._attribs, this.width, this.height);
         Object.assign(this._buffers, buffers);
     }
-    _createData(tileCount) {
+    _createData() {
         const gl = this._gl;
         const attribs = this._attribs;
+        const tileCount = this.width * this.height;
         this._buffers.style && gl.deleteBuffer(this._buffers.style);
         this._data = new Uint32Array(tileCount * VERTICES_PER_TILE);
         const style = gl.createBuffer();
@@ -96,7 +107,7 @@ export default class Scene {
         this._drawRequested = false;
         gl.bindBuffer(gl.ARRAY_BUFFER, this._buffers.style);
         gl.bufferData(gl.ARRAY_BUFFER, this._data, gl.DYNAMIC_DRAW);
-        gl.drawArrays(gl.TRIANGLES, 0, this._tileCount[0] * this._tileCount[1] * VERTICES_PER_TILE);
+        gl.drawArrays(gl.TRIANGLES, 0, this.width * this.height * VERTICES_PER_TILE);
     }
     _uploadGlyphs(pixels) {
         const gl = this._gl;
@@ -106,13 +117,13 @@ export default class Scene {
         this._requestDraw();
     }
 }
-function createGeometry(gl, attribs, size) {
-    let tileCount = size[0] * size[1];
+function createGeometry(gl, attribs, width, height) {
+    let tileCount = width * height;
     let positionData = new Uint16Array(tileCount * QUAD.length);
     let uvData = new Uint8Array(tileCount * QUAD.length);
     let i = 0;
-    for (let y = 0; y < size[1]; y++) {
-        for (let x = 0; x < size[0]; x++) {
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
             QUAD.forEach(value => {
                 positionData[i] = (i % 2 ? y : x) + value;
                 uvData[i] = value;

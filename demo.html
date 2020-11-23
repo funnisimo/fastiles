@@ -16,10 +16,9 @@ async function init() {
 
 	const glyphs = new Glyphs({ tileSize: 12, fontSize: 14 });
 
-	let tileCount = [50, 38];
 	let s = new Scene({
-		tileSize: [12, 12],
-		tileCount,
+		width: 50,
+		height: 38,
 		glyphs: glyphs.node,
 	});
 
@@ -33,8 +32,8 @@ async function init() {
 	let count = 0;
 	function draw() {
 		let i, j;
-		for (j=0;j<tileCount[1];j++) {
-			for (i=0;i<tileCount[0];i++) {
+		for (j=0;j<s.height;j++) {
+			for (i=0;i<s.width;i++) {
 				s.draw(i, j, rnd(256), rnd(4096), 0);
 			}
 		}

@@ -1,4 +1,4 @@
-export interface Options {
+interface Options {
     width: number;
     height: number;
     glyphs?: TexImageSource;
@@ -33,3 +33,4 @@ export default class Canvas {
     private _render;
     private _uploadGlyphs;
 }
+export {};

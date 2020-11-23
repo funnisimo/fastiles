@@ -3,38 +3,39 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
+		<script lang="javascript" src="./dist/fastiles.js"></script>
 	</head>
 	<body>
 <script type="module">
 window.addEventListener("error", e => console.warn(e));
 window.addEventListener("unhandledrejection ", e => console.warn(e));
 
-import { Canvas, Glyphs } from "./js/fastiles.js";
+//import { Canvas, Glyphs } from "./js/fastiles.js";
 
 
 async function init() {
 
-	const glyphs = new Glyphs({ tileSize: 12, fontSize: 14 });
+	const glyphs = new Fastiles.Glyphs({ tileSize: 12, fontSize: 14 });
 
-	let s = new Canvas({
+	const canvas = new Fastiles.Canvas({
 		width: 50,
 		height: 38,
 		glyphs: glyphs.node,
 	});
 
-	document.body.appendChild(s.node);
+	document.body.appendChild(canvas.node);
 
-	window.s = s;
-	window.Canvas = Canvas;
+	window.canvas = canvas;
+	window.glyphs = glyphs;
 
 	function rnd(n) { return Math.floor(Math.random() * n); }
 
 	let count = 0;
 	function draw() {
 		let i, j;
-		for (j=0;j<s.height;j++) {
-			for (i=0;i<s.width;i++) {
-				s.draw(i, j, rnd(256), rnd(4096), 0);
+		for (j=0;j<canvas.height;j++) {
+			for (i=0;i<canvas.width;i++) {
+				canvas.draw(i, j, rnd(256), rnd(4096), 0);
 			}
 		}
 	}

@@ -6,7 +6,7 @@ import Glyphs from './glyphs.js';
 type GL = WebGL2RenderingContext;
 const VERTICES_PER_TILE = 6;
 
-export interface Options {
+interface Options {
 	width: number;
 	height: number;
 	glyphs?: TexImageSource;
@@ -62,7 +62,7 @@ export default class Canvas {
 
 		const node = this.node;
 		node.width = this._width * this._tileWidth;
-		node.height = this._height * this._tileWidth;
+		node.height = this._height * this._tileHeight;
 
 		const gl = this._gl;
 		const uniforms = this._uniforms;

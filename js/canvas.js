@@ -40,7 +40,7 @@ export default class Canvas {
         this._height = height;
         const node = this.node;
         node.width = this._width * this._tileWidth;
-        node.height = this._height * this._tileWidth;
+        node.height = this._height * this._tileHeight;
         const gl = this._gl;
         const uniforms = this._uniforms;
         gl.viewport(0, 0, node.width, node.height);

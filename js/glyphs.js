@@ -19,7 +19,7 @@ export default class Glyphs {
         this.ctx = this.node.getContext('2d');
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.pxWidth, this.pxHeight);
-        const size = opts.fontSize || Math.max(this.tileWidth, this.tileHeight);
+        const size = opts.fontSize || opts.size || Math.max(this.tileWidth, this.tileHeight);
         this.ctx.font = '' + size + 'px ' + opts.font;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';

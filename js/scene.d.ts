@@ -1,7 +1,7 @@
 export interface Options {
     width: number;
     height: number;
-    glyphs: TexImageSource;
+    glyphs?: TexImageSource;
     node?: HTMLCanvasElement;
 }
 export default class Scene {

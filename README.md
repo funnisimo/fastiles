@@ -40,7 +40,7 @@ const glyphs = new Image();
 glyphs.src = 'url | data';
 await glyphs.decode();
 
-const scene = new Fastiles.Scene({ glyphs, height: 50, width: 38 });
+const scene = new Fastiles.Scene({ glyphs, width: 50, height: 38 });
 
 scene.draw(0, 0, 97, 0xF00, 0xFFF); // red 'A' on white background.
 ```
@@ -50,10 +50,10 @@ scene.draw(0, 0, 97, 0xF00, 0xFFF); // red 'A' on white background.
 The Scene class represents a Fastiles display that is wrapped around a HTTPCanvasElement.  It uses WebGL2 to draw the glyphs.
 
 Options available at scene construction time:
-- glyphs [required] - the image that has the 16x16 layout of the glyphs
-- width  [required] - the number of tiles the scene contains in the X axis
-- height [required] - the number of tiles the scene contains in the Y axis
-- node              - the HTMLCanvasElement to use
+- width - the number of tiles the scene contains in the X axis (default 50)
+- height - the number of tiles the scene contains in the Y axis (default 25)
+- glyphs - the image that has the 16x16 layout of the glyphs (will use default if not given)
+- node - the HTMLCanvasElement to use (will create if not given)
 
 Once you create a scene, you can call draw on it as much as you want.  When you do, it will automatically use requestAnimationFrame to batch the draw calls.
 

@@ -1,5 +1,6 @@
 import { createProgram, createTexture, QUAD } from "./utils.js";
 import * as shaders from "./shaders.js";
+import Glyphs from './glyphs.js';
 const VERTICES_PER_TILE = 6;
 export default class Scene {
     constructor(options) {
@@ -8,18 +9,23 @@ export default class Scene {
         this._attribs = {};
         this._uniforms = {};
         this._drawRequested = false;
-        this.width = 0;
-        this.height = 0;
-        this.tileWidth = 0;
-        this.tileHeight = 0;
+        this.width = 50;
+        this.height = 25;
+        this.tileWidth = 16;
+        this.tileHeight = 16;
         this._gl = this._initGL(options.node);
         this._configure(options);
     }
     get node() { return this._gl.canvas; }
     _configure(options) {
-        this.width = options.width;
-        this.height = options.height;
-        this.updateGlyphs(options.glyphs);
+        this.width = options.width || this.width;
+        this.height = options.height || this.height;
+        let glyphs = options.glyphs;
+        if (!glyphs) {
+            const glyphObj = new Glyphs({ tileWidth: this.tileWidth, tileHeight: this.tileHeight }); // use defaults
+            glyphs = glyphObj.node;
+        }
+        this.updateGlyphs(glyphs);
     }
     resize(width, height) {
         this.width = width;

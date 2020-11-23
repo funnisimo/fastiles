@@ -4,7 +4,8 @@ declare type DrawType = string | DrawFunction;
 declare type CustomGlyphs = Record<number, DrawType>;
 interface GlyphOptions {
     font: string;
-    fontSize?: number;
+    fontSize: number;
+    size: number;
     width: number;
     tileWidth: number;
     height: number;

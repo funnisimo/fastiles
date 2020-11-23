@@ -1,5 +1,6 @@
 import { createProgram, createTexture, QUAD } from "./utils.js";
 import * as shaders from "./shaders.js";
+import Glyphs from './glyphs.js'; 
 
 
 type GL = WebGL2RenderingContext;
@@ -8,7 +9,7 @@ const VERTICES_PER_TILE = 6;
 export interface Options {
 	width: number;
 	height: number;
-	glyphs: TexImageSource;
+	glyphs?: TexImageSource;
 	node?: HTMLCanvasElement;
 }
 
@@ -24,10 +25,10 @@ export default class Scene {
 	private _uniforms: Record<string, WebGLUniformLocation> = {};
 	private _drawRequested: boolean = false;
 	private _glyphs!: WebGLTexture;
-	public width:number=0;
-	public height:number=0;
-	public tileWidth:number=0;
-	public tileHeight:number=0;
+	public width:number=50;
+	public height:number=25;
+	public tileWidth:number=16;
+	public tileHeight:number=16;
 
   constructor(options: Options) {
       this._gl = this._initGL(options.node);
@@ -35,9 +36,14 @@ export default class Scene {
   }
   get node() { return this._gl.canvas; }
   private _configure(options: Options) {
-			this.width = options.width;
-			this.height = options.height;
-			this.updateGlyphs(options.glyphs);
+			this.width = options.width || this.width;
+			this.height = options.height || this.height;
+			let glyphs = options.glyphs;
+			if (!glyphs) {
+				const glyphObj = new Glyphs({ tileWidth: this.tileWidth, tileHeight: this.tileHeight });	// use defaults
+				glyphs = glyphObj.node;
+			}
+			this.updateGlyphs(glyphs);
   }
 
 	resize(width: number, height: number) {

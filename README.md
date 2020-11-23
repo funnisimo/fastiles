@@ -88,17 +88,17 @@ init();
 
 The Fastiles library includes a Glyphs class that makes it easy to create glyph bitmaps from standard fonts.  You use it like this:
 
-```js
-const glyphs = new Glyphs({ width: 12, height: 12, fontSize: 14, font: 'monospace' });
-const scene = new Scene({ glyphs: glyphs.node, width: 30, height: 30 });
-```
-
 The options available for the creation of the glyph are:
-* width - the width of a tile in pixels
-* height - the height of a tile in pixels
+* tileWidth - the width of a tile in pixels
+* tileHeight - the height of a tile in pixels
 * fontSize - the fontsize to use when drawing the glyphs
 * font - the name of the font to use when drawing glyphs (default=monospace)
 * basic - A boolean to indicate that you want only the basic ascii text characters (32-127) drawn
+
+```js
+const glyphs = new Glyphs({ tileWidth: 12, tileHeight: 12, fontSize: 14, font: 'monospace' });
+const scene = new Scene({ glyphs: glyphs.node, width: 30, height: 30 });
+```
 
 Once you have a glyph object, you can modify it by using the draw method in one of 2 ways:
 * draw(index, char) - draws the given character using the configured font in the spot indicated by the index

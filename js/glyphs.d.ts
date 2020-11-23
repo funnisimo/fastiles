@@ -5,7 +5,10 @@ declare type CustomGlyphs = Record<number, DrawType>;
 interface GlyphOptions {
     font: string;
     fontSize?: number;
-    tileSize: number[];
+    width: number;
+    tileWidth: number;
+    height: number;
+    tileHeight: number;
     glyphs?: CustomGlyphs;
     basic: boolean;
     node?: HTMLCanvasElement;

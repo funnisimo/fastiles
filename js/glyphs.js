@@ -6,20 +6,14 @@ export default class Glyphs {
         this.tileHeight = 16;
         this._map = {};
         opts.font = opts.font || 'monospace';
-        if (!opts.tileSize) {
-            opts.tileSize = [12, 16];
-        }
-        else if (typeof opts.tileSize === 'number') {
-            opts.tileSize = [opts.tileSize, opts.tileSize];
-        }
         opts.basic = opts.basic || false;
         this._configure(opts);
         this._initGlyphs(opts.glyphs, opts.basic);
     }
     _configure(opts) {
         this.node = opts.node || document.createElement('canvas');
-        this.tileWidth = opts.tileSize[0];
-        this.tileHeight = opts.tileSize[1];
+        this.tileWidth = opts.tileWidth || opts.width || this.tileWidth;
+        this.tileHeight = opts.tileHeight || opts.height || this.tileHeight;
         this.node.width = this.width * this.tileWidth;
         this.node.height = this.height * this.tileHeight;
         this.ctx = this.node.getContext('2d');

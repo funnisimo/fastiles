@@ -84,3 +84,35 @@ async function init() {
 init();
 ```
 
+## More on Glyphs
+
+The Fastiles library includes a Glyphs class that makes it easy to create glyph bitmaps from standard fonts.  You use it like this:
+
+```js
+const glyphs = new Glyphs({ width: 12, height: 12, fontSize: 14, font: 'monospace' });
+const scene = new Scene({ glyphs: glyphs.node, width: 30, height: 30 });
+```
+
+The options available for the creation of the glyph are:
+* width - the width of a tile in pixels
+* height - the height of a tile in pixels
+* fontSize - the fontsize to use when drawing the glyphs
+* font - the name of the font to use when drawing glyphs (default=monospace)
+* basic - A boolean to indicate that you want only the basic ascii text characters (32-127) drawn
+
+Once you have a glyph object, you can modify it by using the draw method in one of 2 ways:
+* draw(index, char) - draws the given character using the configured font in the spot indicated by the index
+* draw(index, fn) - calls your function with the following parameters:
+  - ctx: CanvasRenderingContext2D - the rendering context you can use to draw into the tile
+  - x, y, width, height: number - the x, y, width, height of the region to draw the glyph into
+
+Custom draw functions are protected by a clipping region that will keep the glyphs from overwriting each other.
+
+If you change the glyphs after the Scene is created, you will need to update it with the Scene.  Do this by calling the `updateGlyphs` method on the scene.
+
+```js
+glyphs.draw(35, '\u2302');
+glyphs.draw(32, (ctx, x, y, w, h) => ctx.fillText('-', x, y) );
+
+scene.updateGlyphs(glyphs.node);
+```

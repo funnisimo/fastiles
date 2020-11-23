@@ -59,7 +59,7 @@ Options available at canvas construction time:
 
 Once you create a canvas, you can call draw on it as much as you want.  When you do, it will automatically use requestAnimationFrame to batch the draw calls.
 
-If you want to resize the Canvas, use the `resize` method.  If you want to change the glyphs, use the `updateGlyphs` method.
+If you want to resize the Canvas, use the `resize` method.  If you want to change the glyphs, set the `glyphs` property.
 
 ## Example
 

@@ -99,7 +99,7 @@ The options available for the creation of the glyph are:
 
 ```js
 const glyphs = new Glyphs({ tileWidth: 12, tileHeight: 12, fontSize: 14, font: 'monospace' });
-const canvas = new Canvas({ glyphs: glyphs.node, width: 30, height: 30 });
+const canvas = new Canvas({ glyphs: glyphs, width: 30, height: 30 });
 ```
 
 Once you have a glyph object, you can modify it by using the draw method in one of 2 ways:
@@ -110,13 +110,17 @@ Once you have a glyph object, you can modify it by using the draw method in one 
 
 Custom draw functions are protected by a clipping region that will keep the glyphs from overwriting each other.
 
-If you change the glyphs after the Canvas is created, you will need to update it with the Canvas.  Do this by calling the `updateGlyphs` method on the canvas.
+If you change the glyphs after the Canvas is created, you can either update the glyphs manually or let the canvas object automatically do it for you.
 
 ```js
 glyphs.draw(35, '\u2302');
 glyphs.draw(32, (ctx, x, y, w, h) => ctx.fillText('-', x, y) );
 
-canvas.updateGlyphs(glyphs.node);
+// manually
+canvas.glyphs = glyphs;
+
+// automatically
+// happens during render process
 ```
 
 ## Credit

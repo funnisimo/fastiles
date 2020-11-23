@@ -13,8 +13,12 @@ export default class Scene {
         this.height = 25;
         this.tileWidth = 16;
         this.tileHeight = 16;
-        this._gl = this._initGL(options.node);
-        this._configure(options);
+        let opts = options;
+        if (options instanceof HTMLCanvasElement) {
+            opts = { node: options };
+        }
+        this._gl = this._initGL(opts.node);
+        this._configure(opts);
     }
     get node() { return this._gl.canvas; }
     _configure(options) {
@@ -61,7 +65,12 @@ export default class Scene {
         this._requestDraw();
     }
     _initGL(node) {
-        node = node || document.createElement("canvas");
+        if (typeof node === 'string') {
+            node = document.getElementById(node);
+        }
+        else if (!node) {
+            node = document.createElement("canvas");
+        }
         let gl = node.getContext("webgl2");
         if (!gl) {
             throw new Error("WebGL 2 not supported");

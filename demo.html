@@ -14,12 +14,12 @@ import { Scene, Glyphs } from "./js/fastiles.js";
 
 async function init() {
 
-	// const glyphs = new Glyphs({ tileSize: 12, fontSize: 14 });
+	const glyphs = new Glyphs({ tileSize: 12, fontSize: 14 });
 
 	let s = new Scene({
 		width: 50,
 		height: 38,
-		// glyphs: glyphs.node,
+		glyphs: glyphs.node,
 	});
 
 	document.body.appendChild(s.node);

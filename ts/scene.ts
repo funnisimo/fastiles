@@ -10,7 +10,7 @@ export interface Options {
 	width: number;
 	height: number;
 	glyphs?: TexImageSource;
-	node?: HTMLCanvasElement;
+	node?: HTMLCanvasElement|string;
 }
 
 export default class Scene {
@@ -30,9 +30,13 @@ export default class Scene {
 	public tileWidth:number=16;
 	public tileHeight:number=16;
 
-  constructor(options: Options) {
-      this._gl = this._initGL(options.node);
-      this._configure(options);
+  constructor(options: Options|HTMLCanvasElement) {
+		let opts = options as Options;
+		if (options instanceof HTMLCanvasElement) {
+			opts = { node: options } as Options;
+		}
+    this._gl = this._initGL(opts.node);
+    this._configure(opts);
   }
   get node() { return this._gl.canvas; }
   private _configure(options: Options) {
@@ -87,8 +91,14 @@ export default class Scene {
       this._requestDraw();
   }
 	
-  _initGL(node?: HTMLCanvasElement) {
-      node = node || document.createElement("canvas");
+  _initGL(node?: HTMLCanvasElement|string) {
+			if (typeof node === 'string') {
+				node = document.getElementById(node) as HTMLCanvasElement;
+			}
+			else if (!node) {
+				node = document.createElement("canvas");
+			}
+
       let gl = node.getContext("webgl2");
       if (!gl) {
           throw new Error("WebGL 2 not supported");

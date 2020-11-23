@@ -2,7 +2,7 @@ export interface Options {
     width: number;
     height: number;
     glyphs?: TexImageSource;
-    node?: HTMLCanvasElement;
+    node?: HTMLCanvasElement | string;
 }
 export default class Scene {
     private _gl;
@@ -16,13 +16,13 @@ export default class Scene {
     height: number;
     tileWidth: number;
     tileHeight: number;
-    constructor(options: Options);
+    constructor(options: Options | HTMLCanvasElement);
     get node(): HTMLCanvasElement | OffscreenCanvas;
     private _configure;
     resize(width: number, height: number): void;
     updateGlyphs(glyphs: TexImageSource): void;
     draw(x: number, y: number, glyph: number, fg: number, bg: number): void;
-    _initGL(node?: HTMLCanvasElement): WebGL2RenderingContext;
+    _initGL(node?: HTMLCanvasElement | string): WebGL2RenderingContext;
     _createGeometry(): void;
     _createData(): void;
     _requestDraw(): void;
